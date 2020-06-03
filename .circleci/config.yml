@@ -17,6 +17,7 @@ parameters:
     description: The URL of Probely's API
     type: string
   target_id:
+    default: PROBELY_TARGET_ID
     description: The id of the target (website) to scan.
     type: string
 steps:

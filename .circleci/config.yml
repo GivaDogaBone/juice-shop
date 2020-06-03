@@ -44,4 +44,5 @@ workflows:
   scan-workflow:
     jobs:
       - probely/security-scan:
+          orb-name: probely/security-scan
           target_id: probely_target_id

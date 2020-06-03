@@ -17,13 +17,11 @@ parameters:
     description: The URL of Probely's API
     type: string
   target_id:
-    default: 'http://owasp-juice.shop'
     description: The id of the target (website) to scan.
     type: string
 steps:
   - run:
       command: |
-        echo $PROBELY_API_KEY
         # Check if API key is set
         if [ -z "${<< parameters.api_key >>}" ]; then
           echo "NO PROBELY API KEY SET"

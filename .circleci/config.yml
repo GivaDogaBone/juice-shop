@@ -47,7 +47,7 @@ workflows:
     jobs:
       - build:
         context: DevSecOps # has an env var called PROBELY_API_KEY
-      - orb-tools/lint
-      - probely/scan:
-          target_id: ${PROBELY_TARGET_ID}
+ #     - orb-tools/lint
+ #     - probely/scan:
+ #         target_id: ${PROBELY_TARGET_ID}
 

@@ -1,115 +1,36 @@
-version: 2.1
-
-orbs:
-  orb-tools: circleci/orb-tools@8.27.6
-  probely: probely/security-scan@dev:alpha
-
-executors:
-  ci-base:
-    resource_class: small
-    docker:
-      - image: cibuilds/base
-
-jobs:
-  scantest:
-    executor: ci-base
-    steps:
-      - run: exit 0 # toggle this to force success or status for testing
-      - probely/scan:
-          target_id: ${PROBELY_TARGET_ID}
-
-integration-dev_filters: &integration-dev_filters
-  branches:
-    ignore: /.*/
-  tags:
-    only: /integration-.*/
-
-integration-master_filters: &integration-master_filters
-  branches:
-    ignore: /.*/
-  tags:
-    only:
-      /master-.*/
-
-prod-deploy_requires: &prod-deploy_requires
-  - scantest-master
-
-workflows:
-  lint_pack-validate_publish-dev:
-    jobs:
-      - orb-tools/lint
-
-      - orb-tools/pack
-      #- orb-tools/pack:
-          #requires:
-            #- orb-tools/lint
-
-      - orb-tools/publish-dev:
-          orb-name: probely/security-scan
-          requires:
-            - orb-tools/pack
-
-      - orb-tools/trigger-integration-workflow:
-          name: trigger-integration-dev
-          ssh-fingerprints: e9:f6:21:2e:39:71:e1:49:24:6c:8a:02:8d:4e:36:76
-          cleanup-tags: true
-          requires:
-            - orb-tools/publish-dev
-          filters:
-            branches:
-              ignore: master
-
-      - orb-tools/trigger-integration-workflow:
-          name: trigger-integration-master
-          ssh-fingerprints: e9:f6:21:2e:39:71:e1:49:24:6c:8a:02:8d:4e:36:76
-          cleanup-tags: true
-          tag: master
-          requires:
-            - orb-tools/publish-dev
-          filters:
-            branches:
-              only: master
-
-  integration-tests_prod-deploy:
-    jobs:
-      # triggered by non-master branch commits
-      - scantest:
-          name: scantest-dev
-          filters: *integration-dev_filters
-      # triggered by master branch commits
-      - scantest:
-          name: scantest-master
-          filters: *integration-master_filters
-
-      # patch, minor, or major publishing
-      - orb-tools/dev-promote-prod:
-          name: dev-promote-patch
-          orb-name: probely/security-scan
-          requires: *prod-deploy_requires
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /master-patch.*/
-
-      - orb-tools/dev-promote-prod:
-          name: dev-promote-minor
-          release: minor
-          orb-name: probely/security-scan
-          requires: *prod-deploy_requires
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /master-minor.*/
-
-      - orb-tools/dev-promote-prod:
-          name: dev-promote-major
-          release: major
-          requires: *prod-deploy_requires
-          orb-name: probely/security-scan
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /master-major.*/
+description: |
+  Start the scan on a target (website) using Probely.
+parameters:
+  api_key:
+    default: PROBELY_API_KEY
+    description: >
+      The Probely API key to use, defined in the PROBELY_API_KEY environment
+      variable.
+    type: env_var_name
+  api_url:
+    default: 'https://api.probely.com'
+    description: The URL of Probely's API
+    type: string
+  target_id:
+    description: The id of the target (website) to scan.
+    type: string
+steps:
+  - run:
+      command: |
+        # Check if API key is set
+        if [ -z "${<< parameters.api_key >>}" ]; then
+          echo "NO PROBELY API KEY SET"
+          echo "Please set your API key in the << parameters.api_key >> variable"
+          exit 1
+        fi
+        # Check if target id is set
+        if [ -z "<< parameters.target_id >>" ]; then
+          echo "NO PROBELY TARGET ID SET"
+          echo "Please set the target id as a parameter for this orb."
+          exit 1
+        fi
+        curl -X POST \
+            -H "Authorization: JWT ${<< parameters.api_key >>}" \
+            << parameters.api_url >>/targets/<< parameters.target_id >>/scan_now/
+        exit $?
+      name: Probely - Starting Security Scan

@@ -39,7 +39,8 @@ workflows:
     jobs:
       #- orb-tools/lint
 
-      - orb-tools/pack:
+      - orb-tools/pack
+      #- orb-tools/pack:
           #requires:
             #- orb-tools/lint
 

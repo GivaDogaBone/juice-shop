@@ -7,7 +7,7 @@ description: |
   Start the scan on a target (website) using Probely.
 parameters:
   api_key:
-    default: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0ZW5hbnQiOiJwcm9iZWx5IiwidXNlcm5hbWUiOiIyNkZZNFlMWXFUNUwiLCJqdGkiOiJGdUxwMVFwNFpmbmgifQ.RHzdpz796MXjeRs30yM0ykdFgQzQInlVTAsCyx8DhMQ'
+    default: PROBELY_API_KEY
     description: >
       The Probely API key to use, defined in the PROBELY_API_KEY environment
       variable.
@@ -44,6 +44,11 @@ steps:
 workflows:
   scan-workflow:
     jobs:
+      - set-environment:
+          context: DevSecOps # has an env var called PROBELY_API_KEY
       - orb-tools/lint
       - probely/scan:
           target_id: ${PROBELY_TARGET_ID}
+          requires:
+            - set-environment
+

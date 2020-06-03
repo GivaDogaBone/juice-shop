@@ -1,5 +1,5 @@
 orbs:
-  probely: probely/security-scan@x.y.z
+  probely: probely/security-scan@1.1.3
 version: 2.1
 workflows:
   example-workflow:

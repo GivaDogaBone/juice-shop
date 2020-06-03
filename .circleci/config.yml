@@ -18,12 +18,13 @@ parameters:
     description: >
       The Probely API key to use, defined in the PROBELY_API_KEY environment
       variable.
-    type: env_var_name
+    type: string
   api_url:
     default: 'https://api.probely.com'
     description: The URL of Probely's API
     type: string
   target_id:
+    default: 'http://owasp-juice.shop'
     description: The id of the target (website) to scan.
     type: string
 steps:

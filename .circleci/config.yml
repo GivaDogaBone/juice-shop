@@ -44,11 +44,8 @@ steps:
 workflows:
   scan-workflow:
     jobs:
-      - set-environment:
-          context: DevSecOps # has an env var called PROBELY_API_KEY
       - orb-tools/lint
       - probely/scan:
+          context: DevSecOps # has an env var called PROBELY_API_KEY
           target_id: ${PROBELY_TARGET_ID}
-          requires:
-            - set-environment
 

@@ -6,3 +6,4 @@ workflows:
     jobs:
       - probely/scan:
           target_id: www.google.com
+          

@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  security-scan: probely/security-scan@1.1.3
+  probely: probely/security-scan@1.1.3
 
 description: |
   Start the scan on a target (website) using Probely.

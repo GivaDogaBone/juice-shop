@@ -22,6 +22,7 @@ parameters:
     type: string
 steps:
   - run:
+      context: DevSecOps # has an env var called PROBELY_API_KEY
       command: |
         # Check if API key is set
         if [ -z "${<< parameters.api_key >>}" ]; then
@@ -46,6 +47,5 @@ workflows:
     jobs:
       - orb-tools/lint
       - probely/scan:
-          context: DevSecOps # has an env var called PROBELY_API_KEY
           target_id: ${PROBELY_TARGET_ID}
 

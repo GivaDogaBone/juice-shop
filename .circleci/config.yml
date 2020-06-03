@@ -41,7 +41,7 @@ steps:
       name: Probely - Starting Security Scan
 
 workflows:
-  example-workflow:
+  scan-workflow:
     jobs:
-      - probely/scan:
+      - probely/security-scan:
           target_id: probely_target_id

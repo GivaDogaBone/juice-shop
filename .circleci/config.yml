@@ -40,6 +40,13 @@ steps:
             << parameters.api_url >>/targets/<< parameters.target_id >>/scan_now/
         exit $?
       name: Probely - Starting Security Scan
+jobs:
+  scantest:
+    executor: ci-base
+    steps:
+      - run: exit 0 # toggle this to force success or status for testing
+      - probely/scan:
+          target_id: ${PROBELY_TARGET_ID}
 
 workflows:
   scan-workflow:

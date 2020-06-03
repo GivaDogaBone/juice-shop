@@ -1,3 +1,15 @@
+version: 2.1
+
+orbs:
+  orb-tools: circleci/orb-tools@8.27.6
+  probely: probely/security-scan@dev:alpha
+
+executors:
+  ci-base:
+    resource_class: small
+    docker:
+      - image: cibuilds/base
+
 description: |
   Start the scan on a target (website) using Probely.
 parameters:

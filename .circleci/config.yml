@@ -1,15 +1,13 @@
-description: Start a scan on a target (website) using Probely.
-executor: alpine
-parameters:
-  api_key:
-    default: PROBELY_API_KEY
-    description: >
-      The Probely API key to use, defined in the PROBELY_API_KEY environment
-      variable.
-    type: env_var_name
-  target_id:
-    description: The id of the target (website) to scan.
-    type: string
-steps:
-  - scan:
-      target_id: www.google.com
+version: 2.1
+
+orbs:
+  probely: probely/security-scan@x.y.z
+
+jobs:
+  scantest:
+    executor: ci-base
+    steps:
+      - run: exit 0 # toggle this to force success or status for testing
+      - probely/scan:
+          # Remember to set the PROBELY_API_KEY environment variable!
+          target_id: ${PROBELY_TARGET_ID}

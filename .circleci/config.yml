@@ -48,6 +48,3 @@ workflows:
       - orb-tools/lint
       - probely/scan:
           target_id: ${PROBELY_TARGET_ID}
-      environment:
-            PROBELY_API_KEY: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0ZW5hbnQiOiJwcm9iZWx5IiwidXNlcm5hbWUiOiIyNkZZNFlMWXFUNUwiLCJqdGkiOiJGdUxwMVFwNFpmbmgifQ.RHzdpz796MXjeRs30yM0ykdFgQzQInlVTAsCyx8DhMQ'
-

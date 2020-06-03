@@ -1,49 +1,82 @@
-version: 2.1
-
-orbs:
-  orb-tools: circleci/orb-tools@8.27.6
-  probely: probely/security-scan@dev:alpha
-
-executors:
-  ci-base:
-    resource_class: small
-    docker:
-      - image: cibuilds/base
-
+# This code is licensed from CircleCI to the user under the MIT license. See
+# https://circleci.com/orbs/registry/licensing for details.
+commands:
+  scan:
+    description: |
+      Start the scan on a target (website) using Probely.
+    parameters:
+      api_key:
+        default: PROBELY_API_KEY
+        description: |
+          The Probely API key to use, defined in the PROBELY_API_KEY environment variable.
+        type: env_var_name
+      api_url:
+        default: https://api.probely.com
+        description: The URL of Probely's API
+        type: string
+      target_id:
+        default: http://owasp-juice.shop
+        description: The id of the target (website) to scan.
+        type: string
+    steps:
+      - run:
+          command: |
+            # Check if API key is set
+            if [ -z "${<< parameters.api_key >>}" ]; then
+              echo "NO PROBELY API KEY SET"
+              echo "Please set your API key in the << parameters.api_key >> variable"
+              exit 1
+            fi
+            # Check if target id is set
+            if [ -z "<< parameters.target_id >>" ]; then
+              echo "NO PROBELY TARGET ID SET"
+              echo "Please set the target id as a parameter for this orb."
+              exit 1
+            fi
+            curl -X POST \
+                -H "Authorization: JWT ${<< parameters.api_key >>}" \
+                << parameters.api_url >>/targets/<< parameters.target_id >>/scan_now/
+            exit $?
+          name: Probely - Starting Security Scan
 description: |
-  Start the scan on a target (website) using Probely.
-parameters:
-  api_key:
-    default: PROBELY_API_KEY
-    description: >
-      The Probely API key to use, defined in the PROBELY_API_KEY environment
-      variable.
-    type: string
-  api_url:
-    default: 'https://api.probely.com'
-    description: The URL of Probely's API
-    type: string
-  target_id:
-    default: 'http://owasp-juice.shop'
-    description: The id of the target (website) to scan.
-    type: string
-steps:
-  - run:
-      command: |
-        # Check if API key is set
-        if [ -z "${<< parameters.api_key >>}" ]; then
-          echo "NO PROBELY API KEY SET"
-          echo "Please set your API key in the << parameters.api_key >> variable"
-          exit 1
-        fi
-        # Check if target id is set
-        if [ -z "<< parameters.target_id >>" ]; then
-          echo "NO PROBELY TARGET ID SET"
-          echo "Please set the target id as a parameter for this orb."
-          exit 1
-        fi
-        curl -X POST \
-            -H "Authorization: JWT ${<< parameters.api_key >>}" \
-            << parameters.api_url >>/targets/<< parameters.target_id >>/scan_now/
-        exit $?
-      name: Probely - Starting Security Scan
+  Use Probely to scan your web application for security vulnerabilities.
+  Full orb source code: https://github.com/Probely/probely-orb
+display:
+  home_url: https://probely.com/
+  source_url: https://github.com/Probely/probely-orb
+examples:
+  scan:
+    description: Start the scan on a target (website) using Probely.
+    usage:
+      orbs:
+        probely: probely/security-scan@dev:alpha
+      version: 2.1
+      workflows:
+        example-workflow:
+          jobs:
+            - probely/scan:
+                target_id: probely_target_id
+executors:
+  alpine:
+    docker:
+      - environment:
+          TERM: dumb
+        image: cibuilds/base:latest
+    resource_class: small
+jobs:
+  scan:
+    description: Start a scan on a target (website) using Probely.
+    executor: alpine
+    parameters:
+      api_key:
+        default: PROBELY_API_KEY
+        description: |
+          The Probely API key to use, defined in the PROBELY_API_KEY environment variable.
+        type: env_var_name
+      target_id:
+        description: The id of the target (website) to scan.
+        type: string
+    steps:
+      - scan:
+          target_id: << parameters.target_id >>
+version: 2.1

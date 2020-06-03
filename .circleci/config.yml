@@ -1,5 +1,6 @@
 version: 2.1
 orbs:
+  orb-tools: circleci/orb-tools@8.27.6
   probely: probely/security-scan@1.1.3
 
 description: |

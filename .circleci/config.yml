@@ -21,7 +21,7 @@ parameters:
     default: PROBELY_TARGET_ID
     description: The id of the target (website) to scan.
     type: string
-    
+
 steps:
   - run:
       command: |
@@ -41,7 +41,7 @@ steps:
             -H "Authorization: JWT ${<< parameters.api_key >>}" \
             << parameters.api_url >>/targets/<< parameters.target_id >>/scan_now/
         exit $?
-      name: Probely - Starting Security Scan
+      name: Probely - Starting Security Scan for http://owasp-juice_shop.com
 
 workflows:
   scan-workflow:

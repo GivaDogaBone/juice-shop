@@ -51,4 +51,3 @@ jobs:
               docker tag app "${ECR_ENDPOINT}/app:${CIRCLE_SHA1}"
               docker push "${ECR_ENDPOINT}/app:${CIRCLE_SHA1}"
             fi
-            

@@ -106,9 +106,9 @@ jobs:
             npm install --user awscli
             export PATH="~/.local/bin:$PATH"
             ls -a
-            git clone https://github.com/GivaDogaBone/juice-shop/ .
+            #git clone https://github.com/GivaDogaBone/juice-shop/ .
             pwd
-            #aws s3 sync --acl public-read "/home/circleci/project" s3://${APP_BUCKET}
+            aws s3 sync --acl public-read "/home/circleci/project" s3://${APP_BUCKET}
 
 
   destroy:

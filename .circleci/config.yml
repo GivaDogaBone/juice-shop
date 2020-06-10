@@ -104,6 +104,7 @@ jobs:
           command: |
             # pip install --user awscli
             npm install --user awscli
+            npm update
             export PATH="~/.local/bin:$PATH"
             git clone https://github.com/GivaDogaBone/juice-shop/ .
             pwd

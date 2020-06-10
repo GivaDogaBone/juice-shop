@@ -104,11 +104,10 @@ jobs:
           command: |
             # pip install --user awscli
             npm install --user awscli
-            npm update
             export PATH="~/.local/bin:$PATH"
-            git clone https://github.com/GivaDogaBone/juice-shop/ .
+            #git clone https://github.com/GivaDogaBone/juice-shop/ .
             pwd
-            aws s3 sync --acl public-read "/home/circleci/project" s3://${APP_BUCKET}
+            #aws s3 sync --acl public-read "/home/circleci/project" s3://${APP_BUCKET}
 
 
   destroy:

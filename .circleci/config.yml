@@ -88,7 +88,6 @@ jobs:
             terraform plan
 
 
-
   apply:
     <<: *apply_job
   apply-with-approval:

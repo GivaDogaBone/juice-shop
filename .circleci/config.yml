@@ -150,7 +150,6 @@ workflows:
       - hold:
           type: approval
           requires:
-            #- deployment
             - aws-ecs/deploy-service-update
       - destroy:
           requires:

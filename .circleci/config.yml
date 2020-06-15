@@ -1,4 +1,8 @@
-version: 2
+version: 2.1
+
+orbs:
+  aws-ecr: circleci/aws-ecr@0.0.2
+  aws-ecs: circleci/aws-ecs@0.0.10
 
 references:
 
@@ -35,13 +39,13 @@ set_terraform_environment: &set_terraform_environment
     name: set terraform environment
     command: |
       cd && touch $BASH_ENV
-      cd ~/project/
+      cd ~/project/terraform_setup
 terraform_init: &terraform_init
   run:
     name: terraform init
     command: |
       source $BASH_ENV
-      cd ~/project/
+      cd ~/project/terraform_setup
       terraform init -backend-config="token=${TF_API_TOKEN}"
 apply_job: &apply_job
   <<: *default_config
@@ -55,7 +59,7 @@ apply_job: &apply_job
         name: terraform apply
         command: |
           source $BASH_ENV
-          cd ~/project/
+          cd ~/project/terraform_setup
           terraform init -backend-config="token=${TF_API_TOKEN}"
           terraform apply --auto-approve
 jobs:
@@ -69,7 +73,7 @@ jobs:
           name: terraform fmt
           command: |
             source $BASH_ENV
-            cd ~/project/
+            cd ~/project/terraform_setup
             terraform init -backend-config="token=${TF_API_TOKEN}"
             terraform fmt
       - *save_repo
@@ -84,31 +88,15 @@ jobs:
           name: terraform plan
           command: |
             source $BASH_ENV
-            cd ~/project/
+            cd ~/project/terraform_setup
             terraform plan
+
 
 
   apply:
     <<: *apply_job
   apply-with-approval:
     <<: *apply_job
-
-  deployment:
-    # docker: [{ image: "circleci/python:latest" }]
-    docker: [{ image: "circleci/node:latest" }]
-    working_directory: "~/project"
-
-    steps:
-      - run:
-          name: "Push to S3"
-          command: |
-            # pip install --user awscli
-            npm install --user awscli
-            export PATH="~/.local/bin:$PATH"
-            ls -a
-            #git clone https://github.com/GivaDogaBone/juice-shop/ .
-            pwd
-            aws s3 sync --acl public-read "/home/circleci/project" s3://${APP_BUCKET}
 
 
   destroy:
@@ -121,7 +109,7 @@ jobs:
           name: "Destruction of env"
           command: |
             source $BASH_ENV
-            cd ~/project/
+            cd ~/project/terraform_setup
             terraform destroy --auto-approve
 
 
@@ -136,13 +124,51 @@ workflows:
       - apply:
           requires:
             - plan
-      - deployment:
+      - aws-ecr/build_and_push_image:
           requires:
             - apply
+          account-url: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+          repo: "${AWS_RESOURCE_NAME_PREFIX}"
+          region: ${AWS_DEFAULT_REGION}
+          tag: "${CIRCLE_SHA1}"
+      - aws-ecs/deploy-service-update:
+          requires:
+            - aws-ecr/build_and_push_image
+          aws-region: ${AWS_DEFAULT_REGION}
+          family: "${AWS_RESOURCE_NAME_PREFIX}-service"
+          cluster-name: "${AWS_RESOURCE_NAME_PREFIX}-cluster"
+          container-image-name-updates: "container=${AWS_RESOURCE_NAME_PREFIX}-service,image-and-tag=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${AWS_RESOURCE_NAME_PREFIX}:${CIRCLE_SHA1}"
+          verify-revision-is-deployed: true
+          post-steps:
+            - run:
+                name: Test the deployment
+                command: |
+                  TARGET_GROUP_ARN=$(aws ecs describe-services --cluster ${AWS_RESOURCE_NAME_PREFIX}-cluster --services ${AWS_RESOURCE_NAME_PREFIX}-service | jq -r '.services[0].loadBalancers[0].targetGroupArn')
+                  ELB_ARN=$(aws elbv2 describe-target-groups --target-group-arns $TARGET_GROUP_ARN | jq -r '.TargetGroups[0].LoadBalancerArns[0]')
+                  ELB_DNS_NAME=$(aws elbv2 describe-load-balancers --load-balancer-arns $ELB_ARN | jq -r '.LoadBalancers[0].DNSName')
+                  curl -s --retry 10 http://$ELB_DNS_NAME | grep "Welcome to nginx!"
       - hold:
           type: approval
           requires:
-            - deployment
+            #- deployment
+            - aws-ecs/deploy-service-update
       - destroy:
           requires:
             - hold
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

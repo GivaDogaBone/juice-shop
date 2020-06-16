@@ -147,6 +147,7 @@ workflows:
                   ELB_ARN=$(aws elbv2 describe-target-groups --target-group-arns $TARGET_GROUP_ARN | jq -r '.TargetGroups[0].LoadBalancerArns[0]')
                   ELB_DNS_NAME=$(aws elbv2 describe-load-balancers --load-balancer-arns $ELB_ARN | jq -r '.LoadBalancers[0].DNSName')
           #        curl -s --retry 10 http://$ELB_DNS_NAME | grep "Welcome to nginx!"
+                  curl -s --retry 10 http://$ELB_DNS_NAME | grep "OWASP"
       - hold:
           type: approval
           requires:

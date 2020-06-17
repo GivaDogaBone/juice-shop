@@ -3,6 +3,8 @@ version: 2.1
 orbs:
   aws-ecr: circleci/aws-ecr@0.0.2
   aws-ecs: circleci/aws-ecs@0.0.10
+  orb-tools: circleci/orb-tools@8.27.6
+  probely: probely/security-scan@dev:alpha
 
 references:
 
@@ -124,6 +126,9 @@ workflows:
       - apply:
           requires:
             - plan
+      - orb-tools/lint:
+          requires:
+            - apply
       - aws-ecr/build_and_push_image:
           requires:
             - apply
@@ -147,8 +152,7 @@ workflows:
                   TARGET_GROUP_ARN=$(aws ecs describe-services --cluster ${AWS_RESOURCE_NAME_PREFIX}-cluster --services ${AWS_RESOURCE_NAME_PREFIX}-service | jq -r '.services[0].loadBalancers[0].targetGroupArn')
                   ELB_ARN=$(aws elbv2 describe-target-groups --target-group-arns $TARGET_GROUP_ARN | jq -r '.TargetGroups[0].LoadBalancerArns[0]')
                   ELB_DNS_NAME=$(aws elbv2 describe-load-balancers --load-balancer-arns $ELB_ARN | jq -r '.LoadBalancers[0].DNSName')
-                  curl -s --retry 10 http://$ELB_DNS_NAME
-          #        curl -s --retry 10 http://$ELB_DNS_NAME | grep "Welcome to nginx!"
+                  curl -s --retry 10 http://$ELB_DNS_NAME:3000 | grep "OWASP"
       - hold:
           type: approval
           requires:

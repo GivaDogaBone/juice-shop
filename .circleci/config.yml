@@ -4,7 +4,7 @@ orbs:
   aws-ecr: circleci/aws-ecr@0.0.2
   aws-ecs: circleci/aws-ecs@0.0.10
   orb-tools: circleci/orb-tools@8.27.6
-  probely: probely/security-scan@dev:alpha
+  probely: probely/security-scan@1.1.3
 
 references:
 
